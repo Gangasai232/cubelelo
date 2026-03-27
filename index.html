@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cubelelo — Support Insights</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- ══════════════════════════ HEADER ══════════════════════════ -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-cube-icon">
+          <div class="cube-face top"></div>
+          <div class="cube-face left"></div>
+          <div class="cube-face right"></div>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">CUBELELO</span>
+          <span class="brand-sub">Support Insights Tool</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div id="weekLabel" class="week-label"></div>
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Day/Night Mode" aria-label="Toggle theme">
+          <span class="theme-icon-moon">🌙</span>
+          <span class="theme-icon-sun">☀️</span>
+          <span class="theme-slider"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ══════════════════════════ INPUT SECTION ══════════════════════════ -->
+    <section class="input-section" id="inputSection">
+      <div class="input-card">
+        <h2 class="input-heading">Load Ticket Data</h2>
+        <p class="input-desc">Upload a <strong>.csv</strong> file or paste CSV text below, then click <em>Generate Summary</em> to see your weekly report.</p>
+        <div class="input-methods">
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-visual">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <rect x="5" y="12" width="30" height="22" rx="3" stroke="currentColor" stroke-width="2"/>
+                <path d="M20 5 L20 22 M14 11 L20 5 L26 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <p class="upload-label">Drag &amp; drop CSV file here</p>
+            <p class="upload-sub">or</p>
+            <button class="btn-secondary" id="browseBtn" type="button">Browse File</button>
+            <input type="file" id="csvFile" accept=".csv" hidden />
+            <span id="fileName" class="file-name"></span>
+          </div>
+          <div class="or-divider"><span>OR</span></div>
+          <div class="paste-zone">
+            <label class="paste-label" for="csvPaste">Paste CSV Text</label>
+            <textarea id="csvPaste" rows="7" placeholder="Ticket ID,Date,Customer Name,Product,Issue Description,Category,Status,Priority&#10;T001,01-03-26,Amit Sharma,3x3 Speed Cube Pro,Cube is tight,Product Quality,Open,High&#10;..."></textarea>
+          </div>
+        </div>
+        <div class="input-footer">
+          <button class="btn-primary" id="analyzeBtn" onclick="handleAnalyze()">Generate Summary <span class="arrow">→</span></button>
+          <button class="btn-ghost" onclick="loadSampleData()">Load Sample Data</button>
+        </div>
+        <div id="errorMsg" class="error-msg hidden"></div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════ DASHBOARD ══════════════════════════ -->
+    <section id="dashboard" class="dashboard hidden">
+
+      <div class="dash-toolbar">
+        <div class="toolbar-left">
+          <h2 class="dash-title">Weekly Report</h2>
+          <span id="ticketCountBadge" class="badge-pill"></span>
+        </div>
+        <button class="btn-ghost small" onclick="resetDashboard()">← New Upload</button>
+      </div>
+
+      <!-- 1. STAT OVERVIEW -->
+      <div class="stat-row" id="statRow"></div>
+
+      <!-- 2. CATEGORIES + SUMMARY side by side -->
+      <div class="two-col-grid">
+
+        <!-- Categories panel -->
+        <div class="panel panel-flex" id="catPanel">
+          <h3 class="panel-title">
+            <span class="ptitle-icon">📊</span>
+            Top Issue Categories
+          </h3>
+          <div id="categoriesList" class="categories-list-area"></div>
+          <div class="cat-footer" id="catFooter"></div>
+        </div>
+
+        <!-- Manager Summary + Action Checklist -->
+        <div class="panel panel-dark" id="summaryPanel">
+          <h3 class="panel-title light">
+            <span class="ptitle-icon">📋</span>
+            Manager Summary
+            <span class="summary-sub">read in 30 seconds</span>
+          </h3>
+          <div id="managerSummary" class="summary-body"></div>
+          <div class="action-checklist" id="actionChecklist">
+            <div class="checklist-header">
+              <span class="checklist-icon">✅</span>
+              <span class="checklist-title">Today's Action List</span>
+              <span class="checklist-progress" id="checklistProgress">0 / 0 done</span>
+            </div>
+            <div class="checklist-items" id="checklistItems"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 3. KEY INSIGHTS -->
+      <div class="panel panel-full" id="insightsPanel">
+        <h3 class="panel-title"><span class="ptitle-icon">💡</span> Key Insights</h3>
+        <div id="insightsGrid" class="insights-grid"></div>
+      </div>
+
+      <!-- 4. UNRESOLVED TICKETS -->
+      <div class="panel panel-full" id="unresolvedPanel">
+        <div class="unresolved-header">
+          <div class="unresolved-title-row">
+            <h3 class="panel-title"><span class="ptitle-icon">🎯</span> Unresolved Tickets</h3>
+            <span id="unresolvedCountBadge" class="badge-pill warning"></span>
+          </div>
+          <div class="filter-bar" id="filterBar">
+            <div class="filter-group">
+              <label class="flabel">Issue Type</label>
+              <select id="filterCat" onchange="applyFilters()"><option value="">All</option></select>
+            </div>
+            <div class="filter-group">
+              <label class="flabel">Priority</label>
+              <select id="filterPri" onchange="applyFilters()">
+                <option value="">All</option>
+                <option value="High">🔴 High</option>
+                <option value="Medium">🟡 Medium</option>
+                <option value="Low">🟢 Low</option>
+              </select>
+            </div>
+            <button class="btn-ghost small clear-btn" onclick="clearFilters()">✕ Clear</button>
+          </div>
+        </div>
+        <!-- Priority colour key -->
+        <div class="priority-legend">
+          <span class="legend-item"><span class="legend-dot dot-red"></span>High Priority</span>
+          <span class="legend-item"><span class="legend-dot dot-yellow"></span>Medium Priority</span>
+          <span class="legend-item"><span class="legend-dot dot-green"></span>Low Priority</span>
+        </div>
+        <div id="filterNote" class="filter-note hidden"></div>
+        <div id="unresolvedTableWrap"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    Cubelelo Support Insights Tool &nbsp;·&nbsp; Internal Operations Dashboard
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
