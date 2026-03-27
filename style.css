@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
-   CUBELELO SUPPORT INSIGHTS — STYLESHEET  v5
-   Changes: Green=Low rows + hover · Tight summary/checklist gap ·
-            AI Assistant removed
+   CUBELELO SUPPORT INSIGHTS — STYLESHEET  v6
+   Changes: summary-body + action-checklist fill height equally
+            inside panel-dark · Green Low rows · Tight layout
    ═══════════════════════════════════════════════════════════════ */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -428,7 +428,14 @@ main {
 /* ══════════════════════════════════════════
    PANELS
 ══════════════════════════════════════════ */
-.two-col-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px; }
+.two-col-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  margin-bottom:20px;
+  /* ★ KEY FIX: stretch children to the same height */
+  align-items: stretch;
+}
 
 .panel {
   background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius-xl);
@@ -438,24 +445,30 @@ main {
 .panel:hover { box-shadow:0 6px 24px rgba(0,0,0,0.4); }
 [data-theme="light"] .panel:hover { box-shadow:0 6px 24px rgba(0,0,0,0.10); }
 
-/* Makes the panel a flex column so cat-footer sticks to the bottom */
+/* Left panel — flex column so cat-footer sticks to bottom */
 .panel-flex {
   display: flex;
   flex-direction: column;
 }
 
-/* ★ FIX: panel-dark is flex column; summary-body gets no artificial flex-grow
-   so checklist sits directly beneath the summary lines with only 16px gap */
+/* ★ RIGHT PANEL — flex column, fills the full grid row height */
 .panel-dark {
-  background:var(--bg3); border-color:var(--border2);
-  display:flex; flex-direction:column;
-  gap: 0;
+  background:var(--bg3);
+  border-color:var(--border2);
+  display: flex;
+  flex-direction: column;
+  /* no fixed gap — children control their own spacing */
 }
 
-/* summary-body: NO flex:1 — let it take its natural height */
+/* ★ SUMMARY BODY — takes up 50% of available space after the title */
 .summary-body {
-  display:flex; flex-direction:column; gap:10px;
-  margin-bottom: 16px;    /* tight, consistent gap above checklist */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 0;           /* ← grows equally with checklist */
+  min-height: 0;          /* ← allows shrinking in flex */
+  overflow-y: auto;       /* ← scrolls if summary lines are many */
+  margin-bottom: 16px;
 }
 
 .panel-full { margin-bottom:20px; }
@@ -464,6 +477,7 @@ main {
   font-family:var(--font-head); font-size:15px; font-weight:700; color:var(--text-bright);
   display:flex; align-items:center; gap:9px; margin-bottom:22px; letter-spacing:0.02em;
   padding-bottom:14px; border-bottom:1px solid var(--border);
+  flex-shrink: 0;         /* ← title never shrinks */
 }
 .panel-title.light { color:var(--text-bright); }
 .ptitle-icon { font-size:17px; }
@@ -606,6 +620,7 @@ main {
   background:var(--bg); border-radius:var(--radius); border:1px solid var(--border);
   border-left:3px solid var(--orange); font-size:13px; color:var(--text); line-height:1.5;
   animation:slideIn 0.35s ease both; transition:border-color 0.2s,background 0.2s; cursor:default;
+  flex-shrink: 0; /* lines don't shrink — container scrolls instead */
 }
 [data-theme="light"] .summary-line { background:var(--bg2); }
 .summary-line:hover { background:rgba(249,115,22,0.04); border-color:rgba(249,115,22,0.4); }
@@ -634,17 +649,23 @@ main {
 
 /* ══════════════════════════════════════════
    ACTION CHECKLIST
-   ★ FIX: removed margin-top:auto so it sits directly below summary
+   ★ FIX: flex:1 so it fills remaining space equally with summary-body
 ══════════════════════════════════════════ */
 .action-checklist {
-  background:var(--checklist-bg);
-  border:1px solid var(--checklist-border); border-radius:var(--radius-lg);
-  padding:16px 18px; flex-shrink:0;
-  /* margin-top:auto removed — tight layout */
+  background: var(--checklist-bg);
+  border: 1px solid var(--checklist-border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  flex: 1 1 0;          /* ← grows equally with summary-body */
+  min-height: 0;        /* ← allows shrinking */
+  display: flex;
+  flex-direction: column;
 }
+
 .checklist-header {
   display:flex; align-items:center; gap:8px; margin-bottom:12px;
   padding-bottom:10px; border-bottom:1px solid var(--checklist-border);
+  flex-shrink: 0;
 }
 .checklist-icon { font-size:15px; }
 .checklist-title {
@@ -657,11 +678,21 @@ main {
   border:1px solid var(--border2); white-space:nowrap;
 }
 .checklist-progress.all-done { color:var(--green); background:var(--green-bg); border-color:var(--green-border); }
-.checklist-items { display:flex; flex-direction:column; gap:7px; }
+
+/* ★ checklist-items fills the remaining space inside checklist box */
+.checklist-items {
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  flex: 1;
+  overflow-y: auto;
+}
+
 .checklist-item {
   display:flex; align-items:center; gap:10px; background:var(--checklist-item-bg);
   border:1px solid var(--border); border-radius:8px; padding:9px 12px;
   cursor:pointer; transition:all 0.2s; user-select:none;
+  flex-shrink: 0;
 }
 .checklist-item:hover { border-color:var(--orange); background:var(--orange-glow2); }
 .checklist-item.done { background:var(--checklist-done-bg); border-color:var(--green-border); opacity:0.75; }
@@ -791,7 +822,7 @@ select:hover { border-color:var(--border3); }
 .ticket-table tbody tr:last-child { border-bottom:none; }
 .ticket-table td { padding:13px 14px; vertical-align:middle; color:var(--text); line-height:1.4; }
 
-/* ★★ ROW COLOURS: High = RED  ·  Medium = YELLOW  ·  Low = GREEN */
+/* ROW COLOURS: High = RED  ·  Medium = YELLOW  ·  Low = GREEN */
 .row-high {
   background: var(--red-row-bg) !important;
   border-left: 3px solid var(--red) !important;
@@ -804,11 +835,9 @@ select:hover { border-color:var(--border3); }
 }
 .row-medium:hover { background: var(--yellow-row-hover) !important; }
 
-/* ★ NEW: Low = subtle green background + green left border + hover */
 .row-low {
   background: var(--green-row-bg) !important;
   border-left: 3px solid var(--green) !important;
-  opacity: 1;   /* removed previous opacity:0.82 */
 }
 .row-low:hover { background: var(--green-row-hover) !important; }
 
@@ -817,7 +846,7 @@ select:hover { border-color:var(--border3); }
   font-weight:600; background:var(--orange-glow2); padding:2px 7px; border-radius:5px;
 }
 
-/* PRIORITY BADGES: High = RED  Medium = YELLOW  Low = GREEN */
+/* PRIORITY BADGES */
 .pri-badge {
   display:inline-flex; align-items:center; gap:5px;
   font-family:var(--font-mono); font-size:11px; font-weight:700;
@@ -869,10 +898,12 @@ select:hover { border-color:var(--border3); }
   .ticket-table { display:block; overflow-x:auto; white-space:nowrap; }
   .insights-grid { grid-template-columns:1fr 1fr; }
   .priority-legend { flex-wrap:wrap; gap:10px; }
+  /* On mobile, panels stack so equal-height is irrelevant; restore natural heights */
+  .summary-body { flex: none; overflow-y: visible; }
+  .action-checklist { flex: none; }
 }
 @media (max-width:480px) {
   .stat-row { grid-template-columns:1fr 1fr; }
   .insights-grid { grid-template-columns:1fr; }
   .brand-sub { display:none; }
 }
-

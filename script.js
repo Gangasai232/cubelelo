@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   CUBELELO SUPPORT INSIGHTS — script.js  v5
-   Changes: AI assistant removed · Green Low rows · Tight layout
+   CUBELELO SUPPORT INSIGHTS — script.js  v6
+   Changes: Equal-height summary/checklist layout support
    ═══════════════════════════════════════════════════════════════ */
 
 /* ──────────────────────────────────────────────────────────────
@@ -444,9 +444,6 @@ function renderInsights(stats) {
 
 /* ──────────────────────────────────────────────────────────────
    RENDER: UNRESOLVED TABLE
-   High = RED row + RED badge
-   Medium = YELLOW row + YELLOW badge
-   Low = GREEN row + GREEN badge  ← NEW
 ────────────────────────────────────────────────────────────── */
 function populateCategoryFilter(unresolved) {
   const sel = document.getElementById('filterCat');
@@ -470,12 +467,9 @@ function renderUnresolvedTable(tickets) {
 
     const priClass  = { High:'pri-high', Medium:'pri-medium', Low:'pri-low' }[t.priority] || 'pri-medium';
     const priSymbol = { High:'▲', Medium:'●', Low:'▼' }[t.priority] || '●';
-
-    /* High = red tint, Medium = yellow tint, Low = green tint */
     const rowClass  = t.priority === 'High'   ? 'row-high'
                     : t.priority === 'Medium' ? 'row-medium'
                     :                           'row-low';
-
     const statusClass = t.status === 'In Progress' ? 'status-progress' : 'status-open';
 
     return `
